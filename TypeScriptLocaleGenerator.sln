@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LocaleGenerator", "LocaleGenerators\LocaleGenerator.fsproj", "{ACF84306-3B55-49D6-B818-880F2C70A1A4}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TypeScriptLocaleWriter", "TypeScriptLocaleWriter\TypeScriptLocaleWriter.fsproj", "{59323DA0-02A1-477F-8697-69CD00D73C1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{BB800487-BB99-49A5-B568-02DE18460C43}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Debug|x86.ActiveCfg = Debug|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Debug|x86.Build.0 = Debug|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Release|Any CPU.ActiveCfg = Release|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Release|Mixed Platforms.Build.0 = Release|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Release|x86.ActiveCfg = Release|x86
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4}.Release|x86.Build.0 = Release|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Debug|x86.ActiveCfg = Debug|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Debug|x86.Build.0 = Debug|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Release|Any CPU.ActiveCfg = Release|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Release|x86.ActiveCfg = Release|x86
+		{59323DA0-02A1-477F-8697-69CD00D73C1F}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{59323DA0-02A1-477F-8697-69CD00D73C1F} = {BB800487-BB99-49A5-B568-02DE18460C43}
+		{ACF84306-3B55-49D6-B818-880F2C70A1A4} = {BB800487-BB99-49A5-B568-02DE18460C43}
+	EndGlobalSection
+EndGlobal
