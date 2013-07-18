@@ -3,9 +3,19 @@ Locale-parser
 
 This is a typescript locale generator written in F# leveraging FParsec.  
 
-Background
-----
+
 Localizing an application consists of having language files that will be used to generate strongly typed classes representing a language. The idea is to avoid hardcoding any language text in your actual application.  This project wanted to take language properties files that were of the form
+
+```
+# This is an ignored comment, but will be parsed as part of the AST
+
+Property = This is some localized text
+OtherProperty = This is localized text with an argument {arg:number}
+ThirdProperty = This is more localized text with another argument with no type {arg}	
+			  = 
+			  = This is a second line		  
+```
+Stored in a directory structure like:
 
 ```
 locales/
@@ -19,15 +29,7 @@ locales/
 	      storeFront.properties
 ```
 
-Where each properties file will contain lines of the form
-
-```
-Property = This is some localized text
-OtherProperty = This is localized text with an argument {arg:number}
-ThirdProperty = This is more localized text with another argument with no type {arg}
-```
-
-The goal is to take each properties file and to create strongly typed code for each locale ending up looking like
+The goal is to take each properties file (which I called a "group") and to create strongly typed code for each locale ending up looking like
 
 ```ts
 export class enUStest implements com.devshorts.data.locale.ITest{                         
@@ -42,9 +44,11 @@ export class enUStest implements com.devshorts.data.locale.ITest{
         return "This is localized text with an argument "+arg.toString();                        
     }                                                                                            
                                                                                                  
-    ThirdProperty(arg:any):string{                                                               
-        return "This is more localized text with another argument with no type "+arg.toString(); 
-    }                                                                                            
+    ThirdProperty(arg:any):string{                                                              
+    	return "This is more localized text with another argument with no type "+arg.toString() 
+					+"\r\n"                                                                                 
+					+"\r\n"+" This is a second line";                                                                      
+	}                                                                                                                                                                                     
                                                                                                  
                                                                                                  
     // dictionary lookup                                                                         
@@ -157,6 +161,8 @@ Or you can do dynamic lookups of localized fields via the dictionary lookup that
 Implementation
 ---
 
-The locale generator is split into two sections. The first is a locale parser, which creates an AST using FParsec combinators.  The first part will also normalize all locales. For example, if you add a property to the master language (right now its "en-US" but it is configurable), you want that property to be added to the `.properties`. files of all the other languages. Same if you remove a property, you want that property to be removed. 
+The locale generator is split into two sections. The first is a locale parser, which creates an AST using FParsec combinators.  The first part will also normalize all locales. For example, if you add a property to the master language (right now its "en-US" but it is configurable), you want that property to be added to the `.properties`. files of all the other languages. Same if you remove a property, you want that property to be removed.   
+
+Using the first section you can get direct access to the properties AST, so you can implement other writers or do other syntax manipulation.  Comment information is also stored in the AST so you can leverage that information as well if you need to.  
 
 The second part is the typescript writer, which takes the normalized locales and their groups, generates class and interface implementations, and merges all the files into the appropriate final form.
