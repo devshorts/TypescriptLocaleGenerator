@@ -80,21 +80,7 @@ module LocaleNormalizer =
     /// Returns true if the fileMethods item (list) contains the target element
     /// </summary>
 
-    let private listContains list elem = List.exists(fun j -> j.entryName = elem.entryName) list.properties   
-
-    ///  <summary>
-    ///  Finds the locale file that has the most methods defined
-    ///  and fills in missing methods of the other ones (if any)
-    ///  this way all  locale classes properly fulfill the interface contract
-    ///  </summary>
-    let private normalizeClass master compareTo =     
-    
-        let missingMethods = List.filter(fun i -> not (listContains compareTo i)) master.properties
-    
-        {
-            compareTo with 
-                properties = List.append compareTo.properties missingMethods
-        }
+    let private listContains list elem = List.exists(fun j -> j.entryName = elem.entryName) list.properties     
 
     /// <summary>
     /// Returns all the group names that this locale implements
