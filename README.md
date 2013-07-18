@@ -165,4 +165,30 @@ The locale generator is split into two sections. The first is a locale parser, w
 
 Using the first section you can get direct access to the properties AST, so you can implement other writers or do other syntax manipulation.  Comment information is also stored in the AST so you can leverage that information as well if you need to.  
 
+The syntax tree that you will get back will be a `LocaleElement list` where a `LocaleElement` is a discriminated union that looks like
+
+```fs
+type Name = string
+
+type Type = string
+
+type PropertyName = string
+
+type Arg = 
+    | WithType of Name * Type
+    | NoType of Name
+
+type LocaleContents = 
+    | Argument of Arg
+    | Text of string    
+    | Comment of string
+    | NewLine
+
+type LocaleProperty = (PropertyName * LocaleContents list)
+
+type LocaleElement =
+    | Entry of LocaleProperty
+    | IgnoreEntry of LocaleContents
+```
+
 The second part is the typescript writer, which takes the normalized locales and their groups, generates class and interface implementations, and merges all the files into the appropriate final form.

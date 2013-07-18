@@ -12,9 +12,13 @@ module Data =
 
     type Extension = string
 
+   
+
     type Name = string
 
     type Type = string
+
+    type PropertyName = string
 
     type Arg = 
         | WithType of Name * Type
@@ -26,7 +30,7 @@ module Data =
         | Comment of string
         | NewLine
 
-    type LocaleProperty = (string * LocaleContents list)
+    type LocaleProperty = (PropertyName * LocaleContents list)
 
     type LocaleElement =
         | Entry of LocaleProperty
