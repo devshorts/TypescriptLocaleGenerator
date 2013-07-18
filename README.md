@@ -1,4 +1,4 @@
-Locale-parser
+Typescript Localization and Properties file syntax parser
 =============
 
 This is a typescript locale generator written in F# leveraging FParsec.  
