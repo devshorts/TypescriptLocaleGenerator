@@ -157,6 +157,32 @@ private sr:locale.ISr = new locale.enUsLocale();
 Or you can do dynamic lookups of localized fields via the dictionary lookup that each group has compiled. This lets you do things like buildling AngularJS localization filters or other dynamic locale lookups.
  
 
+Language Overrides
+---
+You can also configure language overrides that will generate the appropriate typescript locale classes.  A language override, is where you want to have a superset of a specific language overriding only a certain set of properties. 
+
+For example, lets say you have an application geared focused to slightly different markets.  99% of the lexcon is the same, but for a few properties you may want to display something custom.  Maybe you are localizing an app that uses the term "cable" but in some market the word "cable" means something different, and you want to just change all the references to "cable" to be "cord".  The actual language is the same though, for example `en-US`.  In this case you want to "overload" the property of 
+
+`cable = cable`
+
+To be 
+
+`cable = cord`
+
+The new language name will be `en-US-cord`.  So, your properties may look like:
+
+```
+locale/
+	en-us/
+		global.properties
+		users.properties
+	en-us-cord/
+		global.properties
+```
+
+Notice you don't need to supply ALL the properties files, and they will NOT be auto generated (like normal languages), since these are only for overriding purposes. The contents of the `global.properties` in `en-us-cord` will only have properties that override `en-us` and no more.
+
+You can supply overridable suffixes to the normalizer.  If you don't give it any, it will assume you have none. 
 
 Implementation
 ---
