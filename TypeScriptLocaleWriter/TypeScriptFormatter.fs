@@ -41,7 +41,7 @@ module Formatter =
         | Argument(WithType(name, _)) -> wrapPlus (name |> add ".toString()")
         | Argument(NoType(name)) -> wrapPlus (name |> add ".toString()")
         | Text(s) -> wrapPlus(wrapQuotes s)
-        | NewLine -> wrapPlus(wrapQuotes Environment.NewLine)
+        | NewLine -> Environment.NewLine + (addTabs 6 <| wrapPlus(wrapQuotes(@"\r\n")))
         | _ -> ""
 
     (*

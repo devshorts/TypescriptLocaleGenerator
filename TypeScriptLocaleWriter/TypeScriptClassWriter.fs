@@ -13,6 +13,10 @@ module ClassWriter =
     open System
     open System.IO
 
+    
+    let getClassName (locale:LocaleName) = locale.Replace("-","_").ToLowerInvariant()
+
+
     /// <summary>
     /// Takes all the classes representing this locale and merges them into one string
     /// </summary>
@@ -125,7 +129,7 @@ module ClassWriter =
     
         let impls = targetModule.classes |> listToString formatClassEntry
 
-        let safeLocale = targetModule.locale.Replace("-","")
+        let safeLocale = targetModule.locale |> getClassName
 
         String.Format(Templates.srImplementation, 
                       safeLocale, 
@@ -140,7 +144,7 @@ module ClassWriter =
     /// </summary>
     let private classBody (locale:LocaleName) (``namespace``:NameSpace) group = 
     
-        let localeId = locale.Replace("-","") |> add group.groupName
+        let className = locale |> getClassName |> add "_" |> add group.groupName
 
         let functions = group.properties
                             |> List.map Formatter.toFormattedLocaleMethod    
@@ -153,7 +157,7 @@ module ClassWriter =
 
         let classText =  String.Format(Templates.``class template``, 
                                         ``namespace``, 
-                                        localeId, 
+                                        className, 
                                         functions, 
                                         typeScriptFunctionLookup, 
                                         implements)    
@@ -161,7 +165,7 @@ module ClassWriter =
         let interfaceText = generateInterface Templates.genericInterfaceDef group.properties implements
 
         {
-            className = localeId;        
+            className = className;        
             fileBody = classText;
             fileInterface = interfaceText;
             implements = implements;
@@ -193,7 +197,7 @@ module ClassWriter =
         let implementorOfMerged = createImplementorOf config merged
 
         {
-            name = merged.locale.Replace("-","") + "Locale.ts";
+            name = merged.locale |> getClassName |> add ".ts";
             text = implementorOfMerged + Environment.NewLine + merged.fileContents.text
         }
    

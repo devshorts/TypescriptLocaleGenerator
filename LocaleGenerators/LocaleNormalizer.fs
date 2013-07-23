@@ -18,6 +18,19 @@ module LocaleNormalizer =
         (new DirectoryInfo(file)).Name
 
 
+    let suffixFromName (name : string) (delim : char) = 
+        name.Split(delim) |> Array.toList |> List.rev |> List.head    
+
+    let stripSuffix (name : string) (delim : char) = 
+        if not (name.Contains(delim.ToString())) then name
+        else
+            let removed = 
+                name.Split(delim) |> Array.toList |> List.rev |> List.tail |> List.rev
+                    |> List.fold (fun acc i -> acc + delim.ToString() + i) ""         
+
+            removed.Trim(delim)
+        
+    let inList list item = List.exists (fun i -> i = item) list    
 
     /// <summary>
     /// Adds a .properties to the file name if it doesn't already end with it
@@ -80,7 +93,7 @@ module LocaleNormalizer =
     /// Returns true if the fileMethods item (list) contains the target element
     /// </summary>
 
-    let private listContains list elem = List.exists(fun j -> j.entryName = elem.entryName) list.properties     
+    let private rawLocaleListContains list elem = List.exists(fun j -> j.entryName = elem.entryName) list.properties   
 
     /// <summary>
     /// Returns all the group names that this locale implements
@@ -140,12 +153,17 @@ module LocaleNormalizer =
         (locales |> findLocale masterLanguage).groups 
 
     /// <summary>
+    /// True if the locale's suffix is in the configs list of overridable language suffixes
+    /// </summary>
+    let isOverrideLanguage config locale = suffixFromName locale.targetLocale '-' |> inList config.overridableLanguageSuffixes
+
+    /// <summary>
     /// Given two lists of properties where one is the master and one is the one you want to normalize
     /// Add to the comparer any missing methods that are in the master and not in the comparer
     /// </summary>
     let private normalizeMethods master compare = 
-        let missingMethods = List.filter(fun i -> not (listContains compare i)) master.properties
-        let methodsToExclude = List.filter(fun i -> not(listContains master i)) compare.properties
+        let missingMethods = List.filter(fun i -> not (rawLocaleListContains compare i)) master.properties
+        let methodsToExclude = List.filter(fun i -> not(rawLocaleListContains master i)) compare.properties
 
         let normalizedWithExcludes = (Set.ofList compare.properties) - (Set.ofList methodsToExclude) |> Set.toList
         let normalizedWIthIncludes = List.append normalizedWithExcludes missingMethods
@@ -160,14 +178,14 @@ module LocaleNormalizer =
     /// <summary>
     /// For each locales groups, fill in any missing properties from the group with the most methods
     /// </summary>
-    let private normalizeExistingGroups localeDirectory writeGroupToFile masterLanguage locales  = 
+    let private normalizeExistingGroups writeGroupToFile config locales  = 
     
         seq{        
             
-            let masters = masterGroups masterLanguage locales
+            let masters = masterGroups config.masterLanguage locales
 
             for currentLocale in locales do
-                if currentLocale.targetLocale = masterLanguage then
+                if currentLocale.targetLocale = config.masterLanguage then
                     yield currentLocale
                 else                        
                     let normalizedLocaleGroups   =
@@ -178,10 +196,11 @@ module LocaleNormalizer =
                                 yield normalizeMethods ``master group`` group
                         ]
             
-                    normalizedLocaleGroups 
-                        |> List.filter fst  // include only groups that need updating
-                        |> List.map snd // select the actual groups
-                        |> List.iter (writeGroupToFile localeDirectory currentLocale)
+                    if not (isOverrideLanguage config currentLocale) then
+                        normalizedLocaleGroups 
+                            |> List.filter fst  // include only groups that need updating
+                            |> List.map snd // select the actual groups
+                            |> List.iter (writeGroupToFile config.sourceLocaleFolder currentLocale)
 
                     yield {
                         currentLocale with 
@@ -189,37 +208,91 @@ module LocaleNormalizer =
                         }                                                    
         } |> Seq.toList
 
+
+    /// <summary>
+    /// For any locale that is missing files, populate the files with
+    /// entries from the master language and the locale list passed in
+    /// and return the list of locale objects
+    /// </summary>  
+    let private normalizeGroups (options : GroupNormalizerOptions) =             
+        seq {                 
+                    
+            let otherLocales = options.allLocales |> List.filter(fun i -> not (i.targetLocale = options.masterLocale.targetLocale))                                     
+
+            for locale in otherLocales do     
+                if not (options.skip locale) then
+                    let ``master locale group names`` = groupNamesIn options.masterLocale
+
+                    let ``other group names``   = groupNamesIn locale
+
+                    let missingGroupNames =  (Set.ofSeq ``master locale group names``) - (Set.ofSeq ``other group names``) |> Set.toList
+
+                    let groupsToDelete = (Set.ofSeq ``other group names``) - (Set.ofSeq ``master locale group names``) |> Set.toList
+
+                    let replacedGroups = missingGroupNames |> List.map (findGroupInLocale options.masterLocale) 
+
+                    if options.writeToFile then
+                        // make sure to create any missing files
+                        replacedGroups |> 
+                            List.iter (writeGroupToFile options.normalizeConfig.sourceLocaleFolder locale)                
+                
+                    yield {
+                        locale with
+                            groups = List.append locale.groups replacedGroups
+                    }
+
+            if not (options.skip options.masterLocale) then
+                yield options.masterLocale
+        } |> Seq.toList       
+
+    /// <summary>
+    /// For any override locale that is missing files, populate the files with
+    /// entries from the related master locale (so fr-FR when the override is fr-FR-LC)
+    /// and return the list of locale objects
+    /// </summary>  
+    let private normalizeOverrideGroups locales config=
+        let processOverride (localeOverride : Locale) = 
+            let masterLanguage = 
+                let name = stripSuffix localeOverride.targetLocale '-' 
+                findLocale name locales
+                                        
+            let options = {
+                writeToFile = false
+                masterLocale = masterLanguage
+                allLocales = localeOverride::[]
+                normalizeConfig = config
+                skip = fun input -> input.targetLocale = masterLanguage.targetLocale
+            }
+
+            normalizeGroups options
+             
+        // for each override, normalize it in relation to its superset parent
+        // for example fr-FR-LC should be normalized to fr-FR and NOT the master
+        locales 
+            |> List.filter (isOverrideLanguage config)
+            |> List.map processOverride
+            |> List.collect id
+
     /// <summary>
     /// For any locale that is missing files, populate the files with
     /// entries from the english locale
-    // and return the list of locale objects
+    /// and return the list of locale objects
     /// </summary>  
-    let private normalizeMissingGroups path writeGroupToFile masterLanguage locales = 
-        seq {        
+    let private normalizeMissingGroups writeGroupToFile config locales =         
+        let options = {
+            writeToFile = true
+            masterLocale = findLocale config.masterLanguage locales
+            allLocales = locales
+            normalizeConfig = config
+            skip = isOverrideLanguage config
+        }
+                     
+        let normalLanguages = normalizeGroups options
 
-            let masterLocale = findLocale masterLanguage locales 
-        
-            let otherLocales = List.filter(fun i -> not (i.targetLocale = masterLocale.targetLocale)) locales
+        let overrides = normalizeOverrideGroups locales config   
 
-            for locale in otherLocales do            
-                let ``master locale group names`` = groupNamesIn masterLocale
-                let ``other group names``   = groupNamesIn locale
-
-                let missingGroupNames =  (Set.ofSeq ``master locale group names``) - (Set.ofSeq ``other group names``) 
-                                              |> Set.toList
-
-                let replacedGroups = missingGroupNames |> List.map (findGroupInLocale masterLocale) 
-
-                // make sure to create any missing files
-                replacedGroups |> List.iter (writeGroupToFile path locale)
-           
-                yield {
-                    locale with
-                        groups = List.append locale.groups replacedGroups
-                }
-
-            yield masterLocale
-        } |> Seq.toList       
+        List.append normalLanguages overrides
+    
 
     /// <summary>
     /// Returns a list of localeHolder objects which represent a locale
@@ -228,7 +301,7 @@ module LocaleNormalizer =
     /// the objects will have english versions populated in their place, so that everyone
     /// implements all the required methods. 
     /// </summary>
-    let normalize sourceFile masterLanguage : Locale list * DelayedIO list = 
+    let normalize (config : NormalizerConfig) : Locale list * DelayedIO list = 
         let effects = ref []
 
         let ioWriter path locale group = 
@@ -238,10 +311,10 @@ module LocaleNormalizer =
 
             ()
    
-        let locales = getLocaleAsts sourceFile
+        let locales = getLocaleAsts config.sourceLocaleFolder
 
         let normalizedLocales = locales 
-                                    |> normalizeMissingGroups  sourceFile ioWriter masterLanguage
-                                    |> normalizeExistingGroups sourceFile ioWriter masterLanguage
+                                    |> normalizeMissingGroups  ioWriter config
+                                    |> normalizeExistingGroups ioWriter config 
                                  
         (normalizedLocales, !effects)

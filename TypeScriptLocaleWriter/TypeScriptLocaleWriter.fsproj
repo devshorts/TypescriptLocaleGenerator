@@ -23,7 +23,7 @@
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <DocumentationFile>bin\Debug\TypeScriptLocaleWriter.XML</DocumentationFile>
-    <StartArguments>C:\Projects\Cube\branches\feature-4.4-ipad_debrief\src\Core\Cube.MasterService.Web\html\iDebrief\locales C:\Projects\Cube\branches\feature-4.4-ipad_debrief\src\Core\Cube.MasterService.Web\html\iDebrief\js\data\locale  "com.atellis.iDebrief.data.locale" ISr</StartArguments>
+    <StartArguments>C:\Projects\Cube\trunk\src\Core\Cube.MasterService.Web\html\iDebrief\locales C:\Projects\Cube\trunk\src\Core\Cube.MasterService.Web\html\iDebrief\js\data\locale  "com.atellis.iDebrief.data.locale" ISr</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -57,6 +57,10 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

@@ -12,13 +12,9 @@ module Data =
 
     type Extension = string
 
-   
-
     type Name = string
 
     type Type = string
-
-    type PropertyName = string
 
     type Arg = 
         | WithType of Name * Type
@@ -30,7 +26,7 @@ module Data =
         | Comment of string
         | NewLine
 
-    type LocaleProperty = (PropertyName * LocaleContents list)
+    type LocaleProperty = (string * LocaleContents list)
 
     type LocaleElement =
         | Entry of LocaleProperty
@@ -51,4 +47,18 @@ module Data =
     type Locale = {
         targetLocale: LocaleName;
         groups: Group list
+    }
+
+    type NormalizerConfig = {
+        sourceLocaleFolder:Path;
+        masterLanguage:string;
+        overridableLanguageSuffixes:string list;
+    }
+
+    type GroupNormalizerOptions = {
+        writeToFile:bool;
+        masterLocale:Locale;
+        allLocales:Locale list;
+        normalizeConfig:NormalizerConfig;
+        skip:Locale -> bool;
     }

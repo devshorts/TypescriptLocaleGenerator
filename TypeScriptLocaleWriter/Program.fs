@@ -1,6 +1,7 @@
 ﻿module Program
 
 open TypeScript.Data
+open LocaleGenerator.Data
 open LocaleGenerator
 open System
 open System.IO
@@ -40,19 +41,27 @@ An en-US folder is required since it is the master source for other properties"
         else
             Console.WriteLine("Generating locales from {0}", localePath)
 
-            let config = {
+            let masterLanguage = "en-US";
+
+            let classWriterConfig = {
                 localeTarget = args.[1]                                
                 ``namespace`` = args.[2]
                 mainInterface = args.[3]
-                masterLanguage = "en-US"
+                masterLanguage = masterLanguage
+            }
+
+            let normalizerConfig = {
+                masterLanguage = masterLanguage
+                sourceLocaleFolder = localePath
+                overridableLanguageSuffixes = []
             }
         
-            let (normalizedLocales, fileUpdateEffects) = LocaleNormalizer.normalize localePath "en-US"
+            let (normalizedLocales, fileUpdateEffects) = LocaleNormalizer.normalize normalizerConfig
         
             fileUpdateEffects |> executeDelayedIOWrites
 
             normalizedLocales 
-                |> TypeScript.ClassWriter.write write config
+                |> TypeScript.ClassWriter.write write classWriterConfig
                 |> ignore
         
             0
